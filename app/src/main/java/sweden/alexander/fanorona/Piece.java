@@ -22,7 +22,7 @@ public class Piece {
 	private boolean requireConferm;
 	private Piece[] canConfermWith;
 	private boolean confermOption;
-	
+
 	public Piece(PApplet parrent, int color, int[] pos, PlayingField grid) {
 		this.parrent = parrent;
 		this.color   = color;
@@ -38,36 +38,40 @@ public class Piece {
 		canConfermWith = new Piece[2];
 		confermOption = false;
 	}
-	
+
 	public void setDisplayPos(PVector newPos) {
 		this.newPos = newPos;
 	}
-	
+
 	public void setRadius(float newRadius) {
 		radius = newRadius;
 	}
-	
+
 	public void setActive(boolean newActive) {
 		if (!newActive) {
 			decreesingRadius = radius;
 		}
 		active = newActive;
 	}
-	
+
 	public void setCanSelect(boolean newVal) {
 		canBeSelected = newVal;
 	}
-	
+
 	public boolean requiresConfermation() {
 		return requireConferm;
 	}
-	
+
 	public void draw() {
 		if (active) {
 			parrent.fill(color);
 			parrent.noStroke();
+			float moveSpeed = PApplet.dist(0, 0, parrent.width, parrent.height)/2.5f * 1/parrent.frameRate;
+			if (displayPos.x == 0 && displayPos.y == 0) {
+				System.out.println(parrent.width/moveSpeed);
+			}
 			if (selected) {
-				parrent.strokeWeight(20);
+				parrent.strokeWeight(PApplet.dist(0, 0, parrent.width, parrent.height)/150);
 				parrent.stroke(255 - parrent.brightness(color));
 			}
 			parrent.ellipse(displayPos.x, displayPos.y, radius * 2, radius * 2);
@@ -80,19 +84,22 @@ public class Piece {
 			if (confermOption) {
 				int color = (getColor('W', parrent) == this.color) ? getColor('B', parrent) : getColor('W', parrent);
 				parrent.fill(color);
-				parrent.textSize(100);
+				parrent.textSize(12);
+
+				float textHeight = parrent.textAscent() + parrent.textDescent();
+				float percentOfHeight = textHeight/((radius * 2) * 0.9f);
+				parrent.textSize(12 * 1/percentOfHeight);
 				float textWidth = parrent.textWidth("?");
-				float textHeight = parrent.textAscent();
 				float x = (displayPos.x - radius) + ((radius * 2) - textWidth)/2;
-				float y = (displayPos.y + radius) - ((radius * 2) - textHeight)/2;
+				float y = (displayPos.y - radius) + ((radius * 2) - (parrent.textAscent() + parrent.textDescent()))/2 + parrent.textAscent();
 				parrent.text("?", x, y);
 
 			}
-			int multiplyer = 26;
-			if ((displayPos.x - newPos.x < -multiplyer/2 || displayPos.x - newPos.x > multiplyer/2) || displayPos.y - newPos.y < -multiplyer/2 || displayPos.y - newPos.y > multiplyer/2) {
+			if ((displayPos.x - newPos.x < -moveSpeed/2 || displayPos.x - newPos.x > moveSpeed/2) ||
+					displayPos.y - newPos.y < -moveSpeed/2 || displayPos.y - newPos.y > moveSpeed/2) {
 				PVector vect = PVector.sub(newPos, displayPos);
 				vect.normalize();
-				vect.mult(multiplyer);
+				vect.mult(moveSpeed);
 				displayPos.add(vect);
 			} else if (displayPos.x != newPos.x || displayPos.y != newPos.y) {
 				displayPos.x = newPos.x;
@@ -102,41 +109,41 @@ public class Piece {
 			parrent.fill(color);
 			parrent.noStroke();
 			if (selected) {
-				parrent.strokeWeight(5);
+				parrent.strokeWeight(PApplet.dist(0, 0, parrent.width, parrent.height)/150);
 				parrent.stroke(255 - parrent.brightness(color));
 			}
 			parrent.ellipse(displayPos.x, displayPos.y, decreesingRadius * 2, decreesingRadius * 2);
-			decreesingRadius -= 10;
+			decreesingRadius -= radius * 0.15;
 		}
 	}
-	
+
 	public PVector getDisplayPos() {
 		return newPos;
 	}
-	
+
 	public int[] getPos() {
 		return pos;
 	}
-	
+
 	public int getColor() {
 		return color;
 	}
-	
+
 	public void setPos(int[] newPos) {
 		visited.add(pos);
 		lastDirection = PlayingField.createPos(newPos[0] - pos[0], newPos[1] - pos[1]);
 		pos = newPos;
 	}
-	
+
 	public void resetMovement() {
 		visited.clear();
 		lastDirection = null;
 	}
-	
+
 	public void setSelected(boolean newSelected) {
 		selected = newSelected;
 	}
-	
+
 	public boolean isClicked(int mouseX, int mouseY) {
 		if (PApplet.dist(mouseX, mouseY, newPos.x, newPos.y) <= radius) {
 			selected = !selected;
@@ -145,11 +152,11 @@ public class Piece {
 			return false;
 		}
 	}
-	
+
 	public boolean isActive() {
 		return active;
 	}
-	
+
 	public boolean canCapture() {
 		ArrayList<int[]> possibleMoves = getAllPossibleMoves();
 		for (int[] newPos : possibleMoves) {
@@ -159,7 +166,7 @@ public class Piece {
 		}
 		return false;
 	}
-	
+
 	private ArrayList<int[]> getAllPossibleMoves() {
 		MoveDirection[][] directions = grid.getDirections();
 		ArrayList<int[]> possibleMoves = new ArrayList<int[]>();
@@ -176,7 +183,7 @@ public class Piece {
 		}
 		return possibleMoves;
 	}
-	
+
 	public boolean canMoveTo(Piece p) {
 		if (!p.isActive()) {
 			return isValidMove(p.pos[0], p.pos[1]);
@@ -184,7 +191,7 @@ public class Piece {
 			return false;
 		}
 	}
-	
+
 	private boolean isValidMove(int newX, int newY) {
 		int[] direction = {newX - pos[0], newY - pos[1]};
 		MoveDirection move = grid.getDirections()[pos[0] + direction[0] / 2][pos[1] + direction[1] / 2];
@@ -196,7 +203,7 @@ public class Piece {
 			return false;
 		}
 	}
-	
+
 	private boolean containsPos(int[] pos) {
 		for (int[] posToCheck : visited) {
 			if (posToCheck[0] == pos[0] && posToCheck[1] == pos[1]) {
@@ -205,11 +212,11 @@ public class Piece {
 		}
 		return false;
 	}
-	
+
 	private boolean validDirection(int[] direction) {
 		return (lastDirection == null) || (lastDirection[0] != direction[0] || lastDirection[1] != direction[1]);
 	}
-	
+
 	private boolean isCaptureMove(int newX, int newY) {
 		int[] direction = {newX - pos[0], newY - pos[1]};
 		Piece pushPiece = grid.getPiece(newX + direction[0], newY + direction[1]);
@@ -220,7 +227,7 @@ public class Piece {
 		}
 		return false;
 	}
-	
+
 	public boolean isCaptureMove(Piece p) {
 		if (!p.isActive()) {
 			return isCaptureMove(p.pos[0], p.pos[1]);
@@ -228,7 +235,7 @@ public class Piece {
 			return false;
 		}
 	}
-	
+
 	public void capture(Piece p) {
 		int newX = p.getPos()[0];
 		int newY = p.getPos()[1];
@@ -264,7 +271,7 @@ public class Piece {
 			canConfermWith[1].confermOption = true;
 		}
 	}
-	
+
 	public void conferm(Piece p) {
 		if (canConfermWith[0] == p || canConfermWith[1] == p) {
 			int newX = p.getPos()[0];
@@ -287,7 +294,7 @@ public class Piece {
 			canConfermWith = new Piece[2];
 		}
 	}
-	
+
 	@Override
 	public Piece clone() {
 		int[] newPos = {pos[0], pos[1]};
@@ -295,7 +302,7 @@ public class Piece {
 		res.active = active;
 		return res;
 	}
-	
+
 	@Override
 	public String toString() {
 		if (!active) {
@@ -307,7 +314,7 @@ public class Piece {
 			return "W";
 		}
 	}
-	
+
 	public static int getColor(char letter, PApplet applet) {
 		switch (letter) {
 		case 'B':
