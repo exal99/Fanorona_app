@@ -86,12 +86,12 @@ public class Piece {
 				parrent.fill(color);
 				parrent.textSize(12);
 
-				float textHeight = parrent.textAscent() + parrent.textDescent();
-				float percentOfHeight = textHeight/((radius * 2) * 0.9f);
+				float textHeight = parrent.textAscent();
+				float percentOfHeight = textHeight/((radius * 2) * 0.8f);
 				parrent.textSize(12 * 1/percentOfHeight);
 				float textWidth = parrent.textWidth("?");
 				float x = (displayPos.x - radius) + ((radius * 2) - textWidth)/2;
-				float y = (displayPos.y - radius) + ((radius * 2) - (parrent.textAscent() + parrent.textDescent()))/2 + parrent.textAscent();
+				float y = (displayPos.y - radius) + ((radius * 2) - (parrent.textAscent()))/2 + parrent.textAscent();
 				parrent.text("?", x, y);
 
 			}
