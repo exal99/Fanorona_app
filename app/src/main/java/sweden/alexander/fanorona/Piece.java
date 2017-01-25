@@ -37,6 +37,7 @@ public class Piece {
 		requireConferm = false;
 		canConfermWith = new Piece[2];
 		confermOption = false;
+		newPos = new PVector();
 	}
 
 	public void setDisplayPos(PVector newPos) {
