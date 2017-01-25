@@ -8,7 +8,7 @@ import processing.core.PFont;
 
 
 public class Fanorona extends PApplet {
-	private enum Screen {MAIN, DIFFICULITY, GAME};
+	public enum Screen {MAIN, DIFFICULITY, GAME};
 	private PlayingField p;
 	private MenuInterface mainMenu;
 	private MenuInterface difficultSelection;
@@ -84,6 +84,7 @@ public class Fanorona extends PApplet {
 			@Override
 			public Object call() throws Exception {
 				currScreen = Screen.DIFFICULITY;
+				difficultSelection.onResize();
 				return null;
 			}
 		});
@@ -118,14 +119,20 @@ public class Fanorona extends PApplet {
 		}
 	}
 
+	public Screen getCurrScreen() {
+		return currScreen;
+	}
 
-	private void back() {
+
+	public void back() {
 		switch (currScreen) {
 			case DIFFICULITY:
 				currScreen = Screen.MAIN;
+				mainMenu.onResize();
 				break;
 			case GAME:
 				currScreen = Screen.DIFFICULITY;
+				difficultSelection.onResize();
 				break;
 			case MAIN:
 				exit();
