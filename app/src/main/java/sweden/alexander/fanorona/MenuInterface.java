@@ -71,22 +71,39 @@ public class MenuInterface extends ControlP5 {
 		float buttonWidth = lastWidth * 0.3f;
 		float yPadding = lastHeight / numButtons * 0.30f;
 		float yOffset = (lastHeight - ((numButtons) * (buttonHeight) + (numButtons - 1) * yPadding))/2;
+		int maxLen = 0;
+		String maxLable = "";
 		for (int i = 0; i < numButtons; i ++) {
 			Button b = buttons.get(i);
 			b.setHeight((int) buttonHeight);
 			b.setWidth((int) buttonWidth);
 			b.setPosition(lastWidth/2 - buttonWidth/2, yOffset+  (i) * (buttonHeight) + (i) * yPadding);
-			if (buttonHeight != 0) {
+			if (b.getLabel().length() > maxLen) {
+				maxLen = b.getLabel().length();
+				maxLable = b.getLabel();
+			}
+
+//				b.getCaptionLabel().setFont(new ControlFont(font, (int) (12 * 1/percent)));
+		}
+		if (buttonHeight != 0) {
+			parrent.textSize(12);
+			float textHeight = parrent.textAscent() + parrent.textDescent();
+			float percent = textHeight / (buttonHeight * 0.5f);
+			parrent.textSize(12 * 1 / percent);
+			if (parrent.textWidth(maxLable) > buttonWidth) {
 				parrent.textSize(12);
-				float textHeight = parrent.textAscent() + parrent.textDescent();
-				float percent = textHeight/(buttonHeight * 0.5f);
-				parrent.textSize(12 * 1/percent);
-				PFont font = parrent.createFont("cour.ttf", (int) (12 * 1/percent));
-				parrent.textSize((int) (12 * 1/percent));
-				b.setFont(new ControlFont(font, (int) (12 * 1/percent)));
-				b.getCaptionLabel().setFont(new ControlFont(font, (int) (12 * 1/percent)));
+				percent = parrent.textWidth(maxLable) / (buttonWidth * 0.9f);
+				parrent.textSize(12 * 1 / percent);
+			}
+			for (Button b : buttons)  {
+				if (buttonHeight != 0) {
+					PFont font = parrent.createFont("cour.ttf", (int) (12 * 1 / percent));
+					b.setFont(new ControlFont(font, (int) (12 * 1 / percent)));
+				}
 			}
 		}
+
+
 		
 	}
 
