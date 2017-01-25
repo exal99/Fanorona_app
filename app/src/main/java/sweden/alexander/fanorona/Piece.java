@@ -68,9 +68,6 @@ public class Piece {
 			parrent.fill(color);
 			parrent.noStroke();
 			float moveSpeed = PApplet.dist(0, 0, parrent.width, parrent.height)/2.5f * 1/parrent.frameRate;
-			if (displayPos.x == 0 && displayPos.y == 0) {
-				System.out.println(parrent.width/moveSpeed);
-			}
 			if (selected) {
 				parrent.strokeWeight(PApplet.dist(0, 0, parrent.width, parrent.height)/150);
 				parrent.stroke(255 - parrent.brightness(color));
