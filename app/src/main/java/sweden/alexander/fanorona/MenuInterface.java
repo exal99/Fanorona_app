@@ -62,9 +62,10 @@ public class MenuInterface extends ControlP5 {
 			onResize();
 		}
 		super.draw();
+
 	}
 	
-	private void onResize() {
+	public void onResize() {
 		int numButtons = buttons.size();
 		float buttonHeight = lastHeight / numButtons * 0.4f;
 		float buttonWidth = lastWidth * 0.3f;
@@ -80,14 +81,10 @@ public class MenuInterface extends ControlP5 {
 				float textHeight = parrent.textAscent() + parrent.textDescent();
 				float percent = textHeight/(buttonHeight * 0.5f);
 				parrent.textSize(12 * 1/percent);
-				float textWidth = parrent.textWidth(b.getLabel());
-				if (textWidth > buttonWidth * 0.9) {
-					parrent.textSize(12);
-					textWidth = parrent.textWidth(b.getLabel());
-					percent = textWidth/(buttonWidth * 0.9f);
-				}
-				PFont font = parrent.createFont("cour.ttf", 12 * 1/percent, true);
-				b.setFont(new ControlFont(font));
+				PFont font = parrent.createFont("cour.ttf", (int) (12 * 1/percent));
+				parrent.textSize((int) (12 * 1/percent));
+				b.setFont(new ControlFont(font, (int) (12 * 1/percent)));
+				b.getCaptionLabel().setFont(new ControlFont(font, (int) (12 * 1/percent)));
 			}
 		}
 		
