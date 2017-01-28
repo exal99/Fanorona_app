@@ -70,6 +70,8 @@ public class Fanorona extends PApplet {
 		});
 
 		difficultSelection = new MenuInterface(this, menu);
+		difficultSelection.setButtonHeightScale(0.5f);
+		difficultSelection.setYPaddingScale(1.7f);
 	}
 
 	private void startGame(String board) {
