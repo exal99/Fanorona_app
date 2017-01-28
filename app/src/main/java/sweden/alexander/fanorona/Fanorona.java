@@ -30,11 +30,11 @@ public class Fanorona extends PApplet {
 
 	private void makeDifficulityMenu() {
 		LinkedHashMap<String, Callable<Object>> menu = new LinkedHashMap<String, Callable<Object>>();
-		menu.put("Normal", new Callable<Object>() {
+		menu.put("Can I Play Daddy?", new Callable<Object>() {
 
 			@Override
 			public Object call() throws Exception {
-				startGame("normal.txt");
+				startGame("super_easy.txt");
 				return null;
 			}
 
@@ -50,11 +50,11 @@ public class Fanorona extends PApplet {
 
 		});
 
-		menu.put("Can I Play Daddy?", new Callable<Object>() {
+		menu.put("Normal", new Callable<Object>() {
 
 			@Override
 			public Object call() throws Exception {
-				startGame("super_easy.txt");
+				startGame("normal.txt");
 				return null;
 			}
 
