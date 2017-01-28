@@ -82,8 +82,6 @@ public class MenuInterface extends ControlP5 {
 				maxLen = b.getLabel().length();
 				maxLable = b.getLabel();
 			}
-
-//				b.getCaptionLabel().setFont(new ControlFont(font, (int) (12 * 1/percent)));
 		}
 		if (buttonHeight != 0) {
 			parrent.textSize(12);
