@@ -10,18 +10,17 @@ import controlP5.CallbackListener;
 import controlP5.ControlFont;
 import controlP5.ControlP5;
 import processing.core.PApplet;
-import processing.core.PFont;
 
 public class MenuInterface extends ControlP5 {
-	
-	private ArrayList<Button> buttons;
-	private PApplet parrent;
-	private float lastWidth;
-	private float lastHeight;
-	private float yPadding;
-	private float buttonHeightMultiplyer;
-	private float yPaddingScale;
-	private float fontSize;
+
+	protected ArrayList<Button> buttons;
+	protected PApplet parrent;
+	protected float lastWidth;
+	protected float lastHeight;
+	protected float yPadding;
+	protected float buttonHeightMultiplyer;
+	protected float yPaddingScale;
+	protected float buttonFontSize;
 	private ControlFont font;
 
 	public MenuInterface(PApplet parrent, Map<String, Callable<Object>> buttons) {
@@ -83,20 +82,20 @@ public class MenuInterface extends ControlP5 {
 			lastHeight = parrent.height;
 			onResize();
 		}
-		parrent.textSize(fontSize);
+		parrent.textSize(buttonFontSize);
 		super.draw();
 
 	}
 
-	private ControlFont getControlFont() {
-		int size = getFontSize();
+	protected ControlFont getControlFont() {
+		int size = getButtonFontSize();
 		if (size != 0)
-			return new ControlFont(parrent.createFont("cour.ttf", size));
+			return new ControlFont(parrent.createFont("cour.ttf", size), size);
 		return null;
 
 	}
 
-	private int getFontSize() {
+	protected int getButtonFontSize() {
 		int maxLen = 0;
 		float buttonHeight = lastHeight / buttons.size() * buttonHeightMultiplyer;
 		float buttonWidth = lastWidth * 0.3f;
@@ -132,7 +131,7 @@ public class MenuInterface extends ControlP5 {
 		int maxLen = 0;
 		String maxLable = "";
 		font = getControlFont();
-		fontSize = getFontSize();
+		buttonFontSize = getButtonFontSize();
 		for (int i = 0; i < numButtons; i ++) {
 			Button b = buttons.get(i);
 			b.setHeight((int) buttonHeight);

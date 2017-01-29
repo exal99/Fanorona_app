@@ -7,7 +7,7 @@ import processing.core.PApplet;
 import processing.core.PVector;
 
 public class PlayingField {
-	private PApplet parrent;
+	private Fanorona parrent;
 	private MoveDirection[][] directionsGrid;
 	private Piece[][] pieceGrid;
 	private Piece[][] actualPieceGrid;
@@ -18,6 +18,7 @@ public class PlayingField {
 	
 	private int lastWidth;
 	private int lastHeight;
+	private PVector lastStartPos;
 	private float size;
 	
 	private boolean moved;
@@ -25,12 +26,23 @@ public class PlayingField {
 	private Piece toConfermTo;
 	private ArrayList<int[]> walkedAlong;
 
-	public PlayingField(PApplet parrent, String board) {
+	private Timer whiteTimer;
+	private Timer blackTimer;
+	private float timerHeight;
+	private float timerHeightPercent;
+
+	private String boardName;
+	private boolean blitz;
+	
+	private int winner;
+
+	public PlayingField(Fanorona parrent, String board) {
 		this.parrent = parrent;
+		boardName = board;
 		try {
 
-			directionsGrid = Parser.parseDirection(board, parrent);
-			pieceGrid = Parser.parsePieces(board, parrent, this);
+			directionsGrid = Parser.parseDirection(boardName, parrent);
+			pieceGrid = Parser.parsePieces(boardName, parrent, this);
 			actualPieceGrid = new Piece[directionsGrid.length][directionsGrid[0].length];
 			populatePieceGrid();
 			lastWidth = 0;
@@ -40,6 +52,12 @@ public class PlayingField {
 			currentPlayer = Piece.getColor('W', parrent);
 			moved = false;
 			walkedAlong = new ArrayList<int[]>();
+			timerHeightPercent = 0.05f;
+			timerHeight = parrent.height * timerHeightPercent;
+			whiteTimer = null;
+			blackTimer = null;
+			blitz = false;
+			winner = 0;
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -47,9 +65,25 @@ public class PlayingField {
 		}
 		
 	}
+	
+	public PlayingField(Fanorona parrent, String board, int[] whiteTime, int[] blackTime) {
+		this(parrent, board);
+		whiteTimer = new Timer(whiteTime[0], whiteTime[1], whiteTime[2]);
+		blackTimer = new Timer(blackTime[0], blackTime[1], blackTime[2]);
+		timerHeightPercent = 0.1f;
+		timerHeight = parrent.height * timerHeightPercent;
+		blitz = true;
+	}
 
 	public int isVictory() {
 		Piece found = null;
+		if (whiteTimer != null && blackTimer != null) {
+			if (whiteTimer.isDone()) {
+				return Piece.getColor('B', parrent);
+			} else if (blackTimer.isDone()) {
+				return Piece.getColor('W', parrent);
+			}
+		}
 		for (Piece[] row : pieceGrid) {
 			for (Piece p : row) {
 				if (found == null && p.isActive()) {
@@ -98,16 +132,20 @@ public class PlayingField {
 	}
 	
 	public void draw() {
-		PVector start = getStartPos();
+		parrent.fill(255, 255, 255, 100);
+		parrent.rect(0, 0, parrent.width, timerHeight);
+		parrent.rect(0, parrent.height - timerHeight, parrent.width, timerHeight);
 		if (parrent.width != lastWidth || parrent.height != lastHeight || moved) {
 			lastWidth = parrent.width;
 			lastHeight = parrent.height;
 			size = getSize();
 			moved = false;
+			timerHeight = parrent.height * timerHeightPercent;
+			lastStartPos = getStartPos();
 			for (int row = 0; row < pieceGrid.length; row++) {
 				for (int col = 0; col < pieceGrid[0].length; col++) {
 					Piece current = pieceGrid[row][col];
-					current.setDisplayPos(PVector.add(start, new PVector(col * size, row * size)));
+					current.setDisplayPos(PVector.add(lastStartPos, new PVector(col * size, row * size)));
 					current.setRadius((size/2) * 2/3);
 					actualPieceGrid[current.getPos()[0]][current.getPos()[1]].setDisplayPos(current.getDisplayPos());
 				}
@@ -129,13 +167,43 @@ public class PlayingField {
 		}
 		
 		setPossibleSelect();
-		int victory = isVictory();
-		if (victory != 0) {
-			String winner = (victory == Piece.getColor('W', parrent)) ? "White" : "Black";
-			float size = 0.04f * PApplet.dist(0, 0, parrent.width, parrent.height);
-			parrent.textSize(size);
-			parrent.text(winner + " is victorius", size/4, size);
+		//int victory = isVictory();
+		if (winner != 0) {
+			String winnerName = (winner == Piece.getColor('W', parrent)) ? "White" : "Black";
+			switch (winnerName) {
+				case "White":
+					parrent.showGameOver("Sorry you lost but\nyou can challange your\noppnent to a rematch", PApplet.PI, boardName, blitz);
+					break;
+				case "Black":
+					parrent.showGameOver("Sorry you lost but\nyou can challange your\noppnent to a rematch", 0, boardName, blitz);
+			}
 		}
+		if (blackTimer != null && whiteTimer != null) {
+			blackTimer.updateTime();
+			whiteTimer.updateTime();
+			if (blackTimer.isDone()) {
+				winner = Piece.getColor('W', parrent);
+			} else if (whiteTimer.isDone()) {
+				winner = Piece.getColor('B', parrent);
+			}
+			drawTimers();
+		}
+	}
+
+	private void drawTimers() {
+		parrent.textSize(12);
+		float textHeight = parrent.textAscent() + parrent.textDescent();
+		float percentOfHeight = textHeight/(timerHeight * 0.9f);
+		parrent.textSize(12 * 1/percentOfHeight);
+		float x = parrent.width * 0.05f;
+		float y = (timerHeight - (parrent.textAscent() + parrent.textDescent()))/2 + parrent.textAscent();
+		parrent.pushMatrix();
+		parrent.fill(255);
+		parrent.text(whiteTimer.getTimeString(), x, y);
+		parrent.translate(parrent.width, parrent.height);
+		parrent.rotate(PApplet.PI);
+		parrent.text(blackTimer.getTimeString(), x, y);
+		parrent.popMatrix();
 	}
 	
 	public boolean mustBeCapture() {
@@ -182,6 +250,10 @@ public class PlayingField {
 		}
 		if (lastMoved == null) {
 			selected = found;
+			if (found != null && found.getColor() == Piece.getColor('W', parrent) && whiteTimer != null && blackTimer != null &&
+					!whiteTimer.started && !blackTimer.started) {
+				whiteTimer.start();
+			}
 			for (Piece[] row : pieceGrid) {
 				for (Piece p : row) {
 					if (p != found) {
@@ -326,6 +398,16 @@ public class PlayingField {
 			}
 		}
 		walkedAlong.clear();
+		winner = isVictory();
+		if (whiteTimer != null && blackTimer != null) {
+			if (whiteTimer.started) {
+				whiteTimer.stop();
+				blackTimer.start();
+			} else {
+				blackTimer.stop();
+				whiteTimer.start();
+			}
+		}
 	}
 	
 	private void drawLine(MoveDirection direction, int[] pos) {
@@ -341,7 +423,7 @@ public class PlayingField {
 		int numHeight = pieceGrid.length;
 		int numWidth = pieceGrid[0].length;
 		float rectWidth = parrent.width / ((float) numWidth);
-		float rectHeight = parrent.height / ((float) numHeight);
+		float rectHeight = (parrent.height - timerHeight * 2)/ ((float) numHeight);
 		return (rectWidth < rectHeight) ? rectWidth  : rectHeight;
 	}
 	
@@ -349,11 +431,71 @@ public class PlayingField {
 		int numHeight = pieceGrid.length;
 		int numWidth = pieceGrid[0].length;
 		float rectWidth = parrent.width / ((float) numWidth);
-		float rectHeight = parrent.height / ((float) numHeight);
+		float rectHeight = (parrent.height - timerHeight * 2) / ((float) numHeight);
+		//float rectHeight = (parrent.height) / ((float) numHeight);
 		if (rectWidth < rectHeight) {
 			return new PVector(rectWidth/2, (parrent.height - pieceGrid.length * rectWidth) / 2 + rectWidth/2);
 		} else {
-			return new PVector((parrent.width - pieceGrid[0].length * rectHeight)/2 + rectHeight/2, rectHeight/2); 
+			return new PVector((parrent.width - pieceGrid[0].length * rectHeight)/2 + rectHeight/2, rectHeight/2 + timerHeight);
+			//return  new PVector((parrent.width - pieceGrid[0].length * rectHeight)/2 + rectHeight/2, rectHeight/2);
+		}
+	}
+
+	
+	private class Timer {
+		private int minutesRemaining;
+		private int secondsRemaining;
+		private int millisecondsRemaining;
+		private boolean done;
+		private boolean started;
+		private int lastTime;
+
+		public Timer(int minutes, int seconds, int milli) {
+			minutesRemaining = minutes;
+			secondsRemaining = seconds;
+			millisecondsRemaining = milli;
+			done = false;
+			started = false;
+		}
+
+		public void updateTime() {
+			if (!done && started) {
+				int millis = parrent.millis() - lastTime;
+				lastTime = parrent.millis();
+				secondsRemaining -= millis/1000;
+				millisecondsRemaining -= millis%1000;
+				if (millisecondsRemaining < 0) {
+					millisecondsRemaining += 1000;
+					secondsRemaining -= 1;
+				}
+				if (secondsRemaining < 0) {
+					secondsRemaining += 60;
+					minutesRemaining -= 1;
+				}
+				if (minutesRemaining < 0) {
+					done = true;
+					minutesRemaining = 0;
+					secondsRemaining = 0;
+					millisecondsRemaining = 0;
+				}
+			}
+		}
+
+		public boolean isDone() {
+			return done;
+		}
+
+		public String getTimeString() {
+			return String.format("%02d:%02d.%03d", minutesRemaining, secondsRemaining, millisecondsRemaining);
+		}
+
+		public void start() {
+			started = true;
+			lastTime = parrent.millis();
+		}
+
+		public void stop() {
+			started = false;
 		}
 	}
 }
