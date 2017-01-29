@@ -21,6 +21,8 @@ public class MenuInterface extends ControlP5 {
 	private float yPadding;
 	private float buttonHeightMultiplyer;
 	private float yPaddingScale;
+	private float fontSize;
+	private ControlFont font;
 
 	public MenuInterface(PApplet parrent, Map<String, Callable<Object>> buttons) {
 		super(parrent);
@@ -81,23 +83,26 @@ public class MenuInterface extends ControlP5 {
 			lastHeight = parrent.height;
 			onResize();
 		}
+		parrent.textSize(fontSize);
 		super.draw();
 
 	}
-	
-	public void onResize() {
-		int numButtons = buttons.size();
-		float buttonHeight = lastHeight / numButtons * buttonHeightMultiplyer;
-		float buttonWidth = lastWidth * 0.3f;
-		yPadding = calcYPadding();
-		float yOffset = (lastHeight - ((numButtons) * (buttonHeight) + (numButtons - 1) * yPadding))/2;
+
+	private ControlFont getControlFont() {
+		int size = getFontSize();
+		if (size != 0)
+			return new ControlFont(parrent.createFont("cour.ttf", size));
+		return null;
+
+	}
+
+	private int getFontSize() {
 		int maxLen = 0;
+		float buttonHeight = lastHeight / buttons.size() * buttonHeightMultiplyer;
+		float buttonWidth = lastWidth * 0.3f;
 		String maxLable = "";
-		for (int i = 0; i < numButtons; i ++) {
+		for (int i = 0; i < buttons.size(); i ++) {
 			Button b = buttons.get(i);
-			b.setHeight((int) buttonHeight);
-			b.setWidth((int) buttonWidth);
-			b.setPosition(lastWidth/2 - buttonWidth/2, yOffset+  (i) * (buttonHeight) + (i) * yPadding);
 			if (b.getLabel().length() > maxLen) {
 				maxLen = b.getLabel().length();
 				maxLable = b.getLabel();
@@ -113,11 +118,28 @@ public class MenuInterface extends ControlP5 {
 				percent = parrent.textWidth(maxLable) / (buttonWidth * 0.9f);
 				parrent.textSize(12 * 1 / percent);
 			}
-			for (Button b : buttons)  {
-				if (buttonHeight != 0) {
-					PFont font = parrent.createFont("cour.ttf", (int) (12 * 1 / percent));
-					b.setFont(new ControlFont(font, (int) (12 * 1 / percent)));
-				}
+			return (int) (12 * 1/percent);
+		}
+		return 0;
+	}
+	
+	public void onResize() {
+		int numButtons = buttons.size();
+		float buttonHeight = lastHeight / numButtons * buttonHeightMultiplyer;
+		float buttonWidth = lastWidth * 0.3f;
+		yPadding = calcYPadding();
+		float yOffset = (lastHeight - ((numButtons) * (buttonHeight) + (numButtons - 1) * yPadding))/2;
+		int maxLen = 0;
+		String maxLable = "";
+		font = getControlFont();
+		fontSize = getFontSize();
+		for (int i = 0; i < numButtons; i ++) {
+			Button b = buttons.get(i);
+			b.setHeight((int) buttonHeight);
+			b.setWidth((int) buttonWidth);
+			b.setPosition(lastWidth / 2 - buttonWidth / 2, yOffset + (i) * (buttonHeight) + (i) * yPadding);
+			if (font != null) {
+				b.setFont(font);
 			}
 		}
 
