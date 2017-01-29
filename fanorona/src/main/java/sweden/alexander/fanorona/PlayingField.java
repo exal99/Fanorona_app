@@ -209,7 +209,7 @@ public class PlayingField {
 					if (p.getColor() == currentPlayer && p.isActive()) {
 						if (p.canCapture()) {
 							capture.add(p);
-						} else {
+						} else if (p.canMove()){
 							all.add(p);
 						}
 					}
