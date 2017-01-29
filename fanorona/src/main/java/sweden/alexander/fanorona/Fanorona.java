@@ -13,6 +13,7 @@ public class Fanorona extends PApplet {
 	private MenuInterface mainMenu;
 	private MenuInterface difficultSelection;
 	private Screen currScreen;
+	private int menuDelay;
 
 	public void settings() {
 		fullScreen();
@@ -30,7 +31,7 @@ public class Fanorona extends PApplet {
 
 	private void makeDifficulityMenu() {
 		LinkedHashMap<String, Callable<Object>> menu = new LinkedHashMap<String, Callable<Object>>();
-		menu.put("Can I Play Daddy?", new Callable<Object>() {
+		menu.put("Very Easy", new Callable<Object>() {
 
 			@Override
 			public Object call() throws Exception {
@@ -75,8 +76,10 @@ public class Fanorona extends PApplet {
 	}
 
 	private void startGame(String board) {
-		currScreen = Screen.GAME;
-		p = new PlayingField(this, board);
+		if (millis() - menuDelay > 250 || menuDelay == -1) {
+			currScreen = Screen.GAME;
+			p = new PlayingField(this, board);
+		}
 	}
 
 	private void makeMainMenu() {
@@ -85,6 +88,7 @@ public class Fanorona extends PApplet {
 
 			@Override
 			public Object call() throws Exception {
+				menuDelay = millis();
 				currScreen = Screen.DIFFICULITY;
 				difficultSelection.onResize();
 				return null;
@@ -135,6 +139,7 @@ public class Fanorona extends PApplet {
 			case GAME:
 				currScreen = Screen.DIFFICULITY;
 				difficultSelection.onResize();
+				menuDelay = -1;
 				break;
 			case MAIN:
 				exit();
