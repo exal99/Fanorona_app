@@ -3,6 +3,8 @@ package sweden.alexander.fanorona;
 import java.util.LinkedHashMap;
 import java.util.concurrent.Callable;
 
+import mobi.upod.timedurationpicker.TimeDurationPicker;
+import mobi.upod.timedurationpicker.TimeDurationPickerDialog;
 import processing.core.PApplet;
 import processing.core.PFont;
 
@@ -16,6 +18,9 @@ public class Fanorona extends PApplet {
 	private ConfermMenuInterface gameOver;
 	private Screen currScreen;
 	private int menuDelay;
+	
+	private int[] whiteTime;
+	private int[] blackTime;
 
 	public void settings() {
 		fullScreen();
@@ -126,16 +131,43 @@ public class Fanorona extends PApplet {
 
 	}
 
-	private void startGame(String board, boolean blitz) {
+	private void startGame(final String board, boolean blitz) {
 		if (millis() - menuDelay > 250 || menuDelay == -1) {
-			currScreen = Screen.GAME;
+			
 			if (!blitz) {
 				p = new PlayingField(this, board);
+				currScreen = Screen.GAME;
 			} else {
-				int[] whiteTimes = {3, 0, 0};
-				int[] blackTimes = {3, 0, 0};
-				p = new PlayingField(this, board, whiteTimes, blackTimes);
+				PickerDialogFragment white = new PickerDialogFragment();
+				white.setTitle("Select whites time");
+				white.setDurationSetListener(new TimeDurationPickerDialog.OnDurationSetListener() {
+					@Override
+					public void onDurationSet(TimeDurationPicker view, long duration) {
+						whiteTime = PickerDialogFragment.getTime(duration);
+						PickerDialogFragment black = new PickerDialogFragment();
+						black.setTitle("Select blacks time");
+						black.setDurationSetListener(new TimeDurationPickerDialog.OnDurationSetListener() {
+							@Override
+							public void onDurationSet(TimeDurationPicker view, long duration) {
+								blackTime = PickerDialogFragment.getTime(duration);
+								startBlitz(board);
+							}
+						});
+						
+						black.show(getFragmentManager(), "dialog");
+					}
+				});
+				white.show(getFragmentManager(), "dialog");
 			}
+		}
+	}
+	
+	private void startBlitz(String board) {
+		if (whiteTime != null && blackTime != null) {
+			p = new PlayingField(this, board, whiteTime, blackTime);
+			whiteTime = null;
+			blackTime = null;
+			currScreen = Screen.GAME;
 		}
 	}
 
